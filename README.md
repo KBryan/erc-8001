@@ -340,7 +340,7 @@ This project is licensed under [CC0-1.0](https://creativecommons.org/publicdomai
 
 - **Specification Discussion**: [Ethereum Magicians](https://ethereum-magicians.org/t/erc-8001-secure-intents-a-cryptographic-framework-for-autonomous-agent-coordination-draft-erc-8001/24989)
 - **Issues**: [GitHub Issues](https://github.com/your-org/eip-8001-agent-coordination/issues)
-- **Security**: security@yourproject.org
+- **Security**: kwame.bryan@gmail.com
 
 ---
 

@@ -12,3 +12,36 @@ docs/
 
 # Dotenv file
 .env
+
+# Compiled artifacts
+/out/
+/cache/
+
+# Test reports and coverage
+/coverage/
+/lcov.info
+
+# Dependencies installed by Forge
+/lib/
+
+# Local deployments and generated files (if using forge-deploy or similar)
+/deployments/
+/generated/
+
+# Keystore files (if used for secure key management)
+/keystore/
+
+# Foundry specific configuration files that might contain sensitive info
+foundry.toml.local
+.env.*
+
+# Editor/IDE specific files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Node.js related files (if using npm/yarn for frontend or tooling)
+node_modules/
+package-lock.json
+yarn.lock

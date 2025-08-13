@@ -17,7 +17,7 @@ contract AgentCoordinationTest is Test {
         IAgentCoordinationCore.AgentIntent memory intent;
         IAgentCoordinationCore.CoordinationPayload memory payload;
 
-        intent.payloadHash = bytes32(0); // derived in contract
+        intent.payloadHash = keccak256(abi.encode(payload));
         intent.expiry = uint64(block.timestamp + 3600);
         intent.nonce = 1;
         intent.chainId = uint32(block.chainid);

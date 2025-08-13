@@ -45,17 +45,6 @@ interface IAgentCoordinationCore {
 }
 
 contract AgentCoordinationFramework is IAgentCoordinationCore {
-    function _payloadHash(CoordinationPayload calldata p) internal pure returns (bytes32) {
-        return keccak256(abi.encode(
-            p.version,
-            p.coordinationType,
-            p.coordinationData,
-            p.conditionsHash,
-            p.timestamp,
-            p.metadata
-        ));
-    }
-
     struct State {
         address proposer;
         bytes32 payloadHash;
@@ -94,7 +83,7 @@ contract AgentCoordinationFramework is IAgentCoordinationCore {
         State storage s = _coordinations[intentHash];
         require(s.proposer == address(0), "exists");
         s.proposer = intent.agentId;
-        s.payloadHash = _payloadHash(payload);
+        s.payloadHash = intent.payloadHash;
         s.status = 0;
         s.participants = intent.participants;
         emit CoordinationProposed(intentHash, intent.agentId, intent.coordinationType);
@@ -121,7 +110,7 @@ contract AgentCoordinationFramework is IAgentCoordinationCore {
         State storage s = _coordinations[intentHash];
         require(s.proposer != address(0), "missing");
         require(s.status < 2, "done");
-        require(_payloadHash(payload) == s.payloadHash, "payload");
+        require(keccak256(abi.encode(payload)) == s.payloadHash, "payload");
         // Minimal execution stub
         s.status = 2;
         emit CoordinationExecuted(intentHash, msg.sender, true, 0);

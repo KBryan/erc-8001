@@ -4,15 +4,15 @@ pragma solidity ^0.8.20;
 interface IAgentCoordinationCore {
     struct AgentIntent {
         bytes32 payloadHash;
-        uint64  expiry;
-        uint64  nonce;
-        uint32  chainId;
+        uint64 expiry;
+        uint64 nonce;
+        uint32 chainId;
         address agentId;
         bytes32 coordinationType;
         uint256 maxGasCost;
-        uint8   priority;
+        uint8 priority;
         bytes32 dependencyHash;
-        uint8   securityLevel;
+        uint8 securityLevel;
         address[] participants;
         uint256 coordinationValue;
     }
@@ -20,67 +20,100 @@ interface IAgentCoordinationCore {
     struct CoordinationPayload {
         bytes32 version;
         bytes32 coordinationType;
-        bytes   coordinationData;
+        bytes coordinationData;
         bytes32 conditionsHash;
         uint256 timestamp;
-        bytes   metadata;
+        bytes metadata;
     }
 
     struct AcceptanceAttestation {
         bytes32 intentHash;
         address participant;
-        uint64  nonce;
-        uint64  expiry;
+        uint64 nonce;
+        uint64 expiry;
         bytes32 conditionsHash;
-        bytes   signature;
+        bytes signature;
     }
 
-    event CoordinationProposed(bytes32 indexed intentHash, address indexed proposer, bytes32 coordinationType, uint256 participantCount, uint256 coordinationValue);
-    event CoordinationAccepted(bytes32 indexed intentHash, address indexed participant, bytes32 acceptanceHash, uint256 acceptedCount, uint256 requiredCount);
-    event CoordinationExecuted(bytes32 indexed intentHash, address indexed executor, bool success, uint256 gasUsed, bytes result);
-    event CoordinationCancelled(bytes32 indexed intentHash, address indexed canceller, string reason, uint8 finalStatus);
+    event CoordinationProposed(
+        bytes32 indexed intentHash,
+        address indexed proposer,
+        bytes32 coordinationType,
+        uint256 participantCount,
+        uint256 coordinationValue
+    );
+    event CoordinationAccepted(
+        bytes32 indexed intentHash,
+        address indexed participant,
+        bytes32 acceptanceHash,
+        uint256 acceptedCount,
+        uint256 requiredCount
+    );
+    event CoordinationExecuted(
+        bytes32 indexed intentHash, address indexed executor, bool success, uint256 gasUsed, bytes result
+    );
+    event CoordinationCancelled(
+        bytes32 indexed intentHash, address indexed canceller, string reason, uint8 finalStatus
+    );
     event AgentNonceUpdated(address indexed agent, uint64 newNonce);
 
-    function proposeCoordination(AgentIntent calldata intent, bytes calldata signature, CoordinationPayload calldata payload)
-    external returns (bytes32 intentHash);
+    function proposeCoordination(
+        AgentIntent calldata intent,
+        bytes calldata signature,
+        CoordinationPayload calldata payload
+    ) external returns (bytes32 intentHash);
 
-    function acceptCoordination(bytes32 intentHash, AcceptanceAttestation calldata attestation) external returns (bool);
+    function acceptCoordination(bytes32 intentHash, AcceptanceAttestation calldata attestation)
+        external
+        returns (bool);
 
     function executeCoordination(bytes32 intentHash, CoordinationPayload calldata payload, bytes calldata executionData)
-    external returns (bool success, bytes memory result);
+        external
+        returns (bool success, bytes memory result);
 
     function cancelCoordination(bytes32 intentHash, string calldata reason) external;
 
-    function getCoordinationStatus(bytes32 intentHash) external view returns (
-        uint8 status,
-        address proposer,
-        address[] memory participants,
-        address[] memory acceptedBy,
-        uint256 expiry
-    );
+    function getCoordinationStatus(bytes32 intentHash)
+        external
+        view
+        returns (
+            uint8 status,
+            address proposer,
+            address[] memory participants,
+            address[] memory acceptedBy,
+            uint256 expiry
+        );
 
-    function validateIntent(AgentIntent calldata intent, bytes calldata signature) external view returns (bool valid, string memory reason);
+    function validateIntent(AgentIntent calldata intent, bytes calldata signature)
+        external
+        view
+        returns (bool valid, string memory reason);
     function getAgentNonce(address agent) external view returns (uint64);
     function getRequiredAcceptances(bytes32 intentHash) external view returns (uint256);
 }
 
 contract AgentCoordinationFramework is IAgentCoordinationCore {
     // EIP-712 Domain
-    bytes32 public constant DOMAIN_TYPEHASH = keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)");
-    bytes32 public constant AGENT_INTENT_TYPEHASH = keccak256("AgentIntent(bytes32 payloadHash,uint64 expiry,uint64 nonce,uint32 chainId,address agentId,bytes32 coordinationType,uint256 maxGasCost,uint8 priority,bytes32 dependencyHash,uint8 securityLevel,bytes32 participantsHash,uint256 coordinationValue)");
-    bytes32 public constant ACCEPTANCE_TYPEHASH = keccak256("AcceptanceAttestation(bytes32 intentHash,address participant,uint64 nonce,uint64 expiry,bytes32 conditionsHash)");
+    bytes32 public constant DOMAIN_TYPEHASH =
+        keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)");
+    bytes32 public constant AGENT_INTENT_TYPEHASH = keccak256(
+        "AgentIntent(bytes32 payloadHash,uint64 expiry,uint64 nonce,uint32 chainId,address agentId,bytes32 coordinationType,uint256 maxGasCost,uint8 priority,bytes32 dependencyHash,uint8 securityLevel,bytes32 participantsHash,uint256 coordinationValue)"
+    );
+    bytes32 public constant ACCEPTANCE_TYPEHASH = keccak256(
+        "AcceptanceAttestation(bytes32 intentHash,address participant,uint64 nonce,uint64 expiry,bytes32 conditionsHash)"
+    );
 
     bytes32 public immutable DOMAIN_SEPARATOR;
 
     struct CoordinationState {
         address proposer;
         bytes32 payloadHash;
-        uint8   status; // 0=PROPOSED, 1=READY, 2=EXECUTED, 3=CANCELLED, 4=EXPIRED
-        uint64  expiry;
+        uint8 status; // 0=PROPOSED, 1=READY, 2=EXECUTED, 3=CANCELLED, 4=EXPIRED
+        uint64 expiry;
         address[] participants;
         mapping(address => bool) accepted;
         uint256 acceptedCount;
-        uint8   securityLevel;
+        uint8 securityLevel;
         uint256 coordinationValue;
     }
 
@@ -93,21 +126,22 @@ contract AgentCoordinationFramework is IAgentCoordinationCore {
         _;
         _locked = false;
     }
+
     bool private _locked;
 
     constructor() {
-        DOMAIN_SEPARATOR = keccak256(abi.encode(
-            DOMAIN_TYPEHASH,
-            keccak256("AgentCoordinationFramework"),
-            keccak256("1"),
-            block.chainid,
-            address(this)
-        ));
+        DOMAIN_SEPARATOR = keccak256(
+            abi.encode(
+                DOMAIN_TYPEHASH, keccak256("AgentCoordinationFramework"), keccak256("1"), block.chainid, address(this)
+            )
+        );
     }
 
-    function proposeCoordination(AgentIntent calldata intent, bytes calldata signature, CoordinationPayload calldata payload)
-    external override nonReentrant returns (bytes32 intentHash)
-    {
+    function proposeCoordination(
+        AgentIntent calldata intent,
+        bytes calldata signature,
+        CoordinationPayload calldata payload
+    ) external override nonReentrant returns (bytes32 intentHash) {
         // Validate intent structure
         require(intent.expiry > block.timestamp, "Intent expired");
         require(intent.chainId == block.chainid, "Invalid chain ID");
@@ -149,13 +183,18 @@ contract AgentCoordinationFramework is IAgentCoordinationCore {
         agentNonces[intent.agentId] = intent.nonce;
         emit AgentNonceUpdated(intent.agentId, intent.nonce);
 
-        emit CoordinationProposed(intentHash, intent.agentId, intent.coordinationType, intent.participants.length, intent.coordinationValue);
+        emit CoordinationProposed(
+            intentHash, intent.agentId, intent.coordinationType, intent.participants.length, intent.coordinationValue
+        );
 
         return intentHash;
     }
 
     function acceptCoordination(bytes32 intentHash, AcceptanceAttestation calldata attestation)
-    external override nonReentrant returns (bool)
+        external
+        override
+        nonReentrant
+        returns (bool)
     {
         CoordinationState storage state = _coordinations[intentHash];
         require(state.proposer != address(0), "Coordination not found");
@@ -177,7 +216,10 @@ contract AgentCoordinationFramework is IAgentCoordinationCore {
 
         // Verify acceptance signature
         bytes32 acceptanceHash = getAcceptanceHash(attestation);
-        require(verifyAcceptanceSignature(acceptanceHash, attestation.signature, attestation.participant), "Invalid acceptance signature");
+        require(
+            verifyAcceptanceSignature(acceptanceHash, attestation.signature, attestation.participant),
+            "Invalid acceptance signature"
+        );
 
         // Record acceptance
         state.accepted[attestation.participant] = true;
@@ -185,7 +227,9 @@ contract AgentCoordinationFramework is IAgentCoordinationCore {
 
         bytes32 acceptanceCommitment = keccak256(abi.encodePacked(intentHash, attestation.participant, block.number));
 
-        emit CoordinationAccepted(intentHash, attestation.participant, acceptanceCommitment, state.acceptedCount, state.participants.length);
+        emit CoordinationAccepted(
+            intentHash, attestation.participant, acceptanceCommitment, state.acceptedCount, state.participants.length
+        );
 
         // Check if all participants have accepted
         bool allAccepted = (state.acceptedCount == state.participants.length);
@@ -197,7 +241,10 @@ contract AgentCoordinationFramework is IAgentCoordinationCore {
     }
 
     function executeCoordination(bytes32 intentHash, CoordinationPayload calldata payload, bytes calldata executionData)
-    external override nonReentrant returns (bool success, bytes memory result)
+        external
+        override
+        nonReentrant
+        returns (bool success, bytes memory result)
     {
         CoordinationState storage state = _coordinations[intentHash];
         require(state.proposer != address(0), "Coordination not found");
@@ -235,13 +282,18 @@ contract AgentCoordinationFramework is IAgentCoordinationCore {
         emit CoordinationCancelled(intentHash, msg.sender, reason, finalStatus);
     }
 
-    function getCoordinationStatus(bytes32 intentHash) external view override returns (
-        uint8 status,
-        address proposer,
-        address[] memory participants,
-        address[] memory acceptedBy,
-        uint256 expiry
-    ) {
+    function getCoordinationStatus(bytes32 intentHash)
+        external
+        view
+        override
+        returns (
+            uint8 status,
+            address proposer,
+            address[] memory participants,
+            address[] memory acceptedBy,
+            uint256 expiry
+        )
+    {
         CoordinationState storage state = _coordinations[intentHash];
         status = state.status;
         proposer = state.proposer;
@@ -266,7 +318,10 @@ contract AgentCoordinationFramework is IAgentCoordinationCore {
     }
 
     function validateIntent(AgentIntent calldata intent, bytes calldata signature)
-    external view override returns (bool valid, string memory reason)
+        external
+        view
+        override
+        returns (bool valid, string memory reason)
     {
         if (intent.expiry <= block.timestamp) {
             return (false, "Intent expired");
@@ -305,54 +360,64 @@ contract AgentCoordinationFramework is IAgentCoordinationCore {
     }
 
     function getIntentHash(AgentIntent calldata intent) public pure returns (bytes32) {
-        return keccak256(abi.encode(
-            AGENT_INTENT_TYPEHASH,
-            intent.payloadHash,
-            intent.expiry,
-            intent.nonce,
-            intent.chainId,
-            intent.agentId,
-            intent.coordinationType,
-            intent.maxGasCost,
-            intent.priority,
-            intent.dependencyHash,
-            intent.securityLevel,
-            keccak256(abi.encodePacked(intent.participants)),
-            intent.coordinationValue
-        ));
+        return keccak256(
+            abi.encode(
+                AGENT_INTENT_TYPEHASH,
+                intent.payloadHash,
+                intent.expiry,
+                intent.nonce,
+                intent.chainId,
+                intent.agentId,
+                intent.coordinationType,
+                intent.maxGasCost,
+                intent.priority,
+                intent.dependencyHash,
+                intent.securityLevel,
+                keccak256(abi.encodePacked(intent.participants)),
+                intent.coordinationValue
+            )
+        );
     }
 
     function getPayloadHash(CoordinationPayload calldata payload) public pure returns (bytes32) {
-        return keccak256(abi.encode(
-            payload.version,
-            payload.coordinationType,
-            payload.coordinationData,
-            payload.conditionsHash,
-            payload.timestamp,
-            payload.metadata
-        ));
+        return keccak256(
+            abi.encode(
+                payload.version,
+                payload.coordinationType,
+                payload.coordinationData,
+                payload.conditionsHash,
+                payload.timestamp,
+                payload.metadata
+            )
+        );
     }
 
     function getAcceptanceHash(AcceptanceAttestation calldata attestation) public pure returns (bytes32) {
-        return keccak256(abi.encode(
-            ACCEPTANCE_TYPEHASH,
-            attestation.intentHash,
-            attestation.participant,
-            attestation.nonce,
-            attestation.expiry,
-            attestation.conditionsHash
-        ));
+        return keccak256(
+            abi.encode(
+                ACCEPTANCE_TYPEHASH,
+                attestation.intentHash,
+                attestation.participant,
+                attestation.nonce,
+                attestation.expiry,
+                attestation.conditionsHash
+            )
+        );
     }
 
     function verifyIntentSignature(bytes32 intentHash, bytes calldata signature, address expectedSigner)
-    public view returns (bool)
+        public
+        view
+        returns (bool)
     {
         bytes32 digest = keccak256(abi.encodePacked("\x19\x01", DOMAIN_SEPARATOR, intentHash));
         return recoverSigner(digest, signature) == expectedSigner;
     }
 
     function verifyAcceptanceSignature(bytes32 acceptanceHash, bytes calldata signature, address expectedSigner)
-    public view returns (bool)
+        public
+        view
+        returns (bool)
     {
         bytes32 digest = keccak256(abi.encodePacked("\x19\x01", DOMAIN_SEPARATOR, acceptanceHash));
         return recoverSigner(digest, signature) == expectedSigner;

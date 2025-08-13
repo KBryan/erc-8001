@@ -7,9 +7,13 @@ pragma solidity ^0.8.20;
  * @notice Provides encryption, access control, and security validation for agent coordination
  */
 contract AgentSecurityModule {
-
     // Security level definitions matching EIP-8001
-    enum SecurityLevel { BASIC, STANDARD, ENHANCED, MAXIMUM }
+    enum SecurityLevel {
+        BASIC,
+        STANDARD,
+        ENHANCED,
+        MAXIMUM
+    }
 
     // Security context for coordination intents
     struct SecurityContext {
@@ -98,13 +102,8 @@ contract AgentSecurityModule {
         bytes memory encryptionKey = _generateEncryptionKey(intentHash, level, participants);
 
         // Create access control hash
-        bytes32 accessControlHash = keccak256(abi.encodePacked(
-            intentHash,
-            level,
-            participants,
-            block.timestamp,
-            block.prevrandao
-        ));
+        bytes32 accessControlHash =
+            keccak256(abi.encodePacked(intentHash, level, participants, block.timestamp, block.prevrandao));
 
         // Store security context
         _securityContexts[intentHash] = SecurityContext({
@@ -129,11 +128,12 @@ contract AgentSecurityModule {
      * @return valid True if security requirements are met
      * @return reason Explanation if validation fails
      */
-    function validateSecurityLevel(
-        bytes32 intentHash,
-        SecurityLevel level,
-        bytes calldata proof
-    ) external view validSecurityLevel(level) returns (bool valid, string memory reason) {
+    function validateSecurityLevel(bytes32 intentHash, SecurityLevel level, bytes calldata proof)
+        external
+        view
+        validSecurityLevel(level)
+        returns (bool valid, string memory reason)
+    {
         SecurityContext storage context = _securityContexts[intentHash];
 
         // Check if context exists
@@ -185,11 +185,12 @@ contract AgentSecurityModule {
      * @return encryptedData Encrypted coordination data
      * @return keyData Key derivation data for participants
      */
-    function encryptCoordinationData(
-        bytes calldata data,
-        address[] calldata participants,
-        SecurityLevel level
-    ) external view validSecurityLevel(level) returns (bytes memory encryptedData, bytes memory keyData) {
+    function encryptCoordinationData(bytes calldata data, address[] calldata participants, SecurityLevel level)
+        external
+        view
+        validSecurityLevel(level)
+        returns (bytes memory encryptedData, bytes memory keyData)
+    {
         require(data.length > 0, "No data to encrypt");
         require(participants.length > 0, "No participants provided");
 
@@ -199,12 +200,7 @@ contract AgentSecurityModule {
         }
 
         // Generate deterministic encryption key
-        bytes32 masterKey = keccak256(abi.encodePacked(
-            data,
-            participants,
-            block.chainid,
-            level
-        ));
+        bytes32 masterKey = keccak256(abi.encodePacked(data, participants, block.chainid, level));
 
         if (level == SecurityLevel.STANDARD) {
             // Standard level: simple XOR encryption
@@ -270,10 +266,7 @@ contract AgentSecurityModule {
      * @param intentHash Hash of the coordination intent
      * @param newLevel New security level (must be higher)
      */
-    function upgradeSecurityLevel(
-        bytes32 intentHash,
-        SecurityLevel newLevel
-    ) external validSecurityLevel(newLevel) {
+    function upgradeSecurityLevel(bytes32 intentHash, SecurityLevel newLevel) external validSecurityLevel(newLevel) {
         SecurityContext storage context = _securityContexts[intentHash];
         require(context.creator != address(0), "Context not found");
         require(context.creator == msg.sender, "Unauthorized: not creator");
@@ -330,19 +323,13 @@ contract AgentSecurityModule {
     }
 
     // Internal functions
-    function _generateEncryptionKey(
-        bytes32 intentHash,
-        SecurityLevel level,
-        address[] calldata participants
-    ) internal view returns (bytes memory) {
-        bytes memory keyMaterial = abi.encodePacked(
-            intentHash,
-            level,
-            participants,
-            block.timestamp,
-            block.prevrandao,
-            block.coinbase
-        );
+    function _generateEncryptionKey(bytes32 intentHash, SecurityLevel level, address[] calldata participants)
+        internal
+        view
+        returns (bytes memory)
+    {
+        bytes memory keyMaterial =
+            abi.encodePacked(intentHash, level, participants, block.timestamp, block.prevrandao, block.coinbase);
 
         if (level == SecurityLevel.BASIC) {
             return abi.encodePacked(keccak256(keyMaterial));
@@ -359,11 +346,11 @@ contract AgentSecurityModule {
         }
     }
 
-    function _validateSecurityProof(
-        bytes32 intentHash,
-        bytes calldata proof,
-        SecurityLevel level
-    ) internal view returns (bool) {
+    function _validateSecurityProof(bytes32 intentHash, bytes calldata proof, SecurityLevel level)
+        internal
+        view
+        returns (bool)
+    {
         // Simplified proof validation - in production this would be more sophisticated
         if (level == SecurityLevel.ENHANCED) {
             // Require proof to be a signature over intentHash
@@ -423,11 +410,11 @@ contract AgentSecurityModule {
         return _xorEncryptMemory(data, key); // XOR is symmetric
     }
 
-    function _multiLayerEncrypt(
-        bytes calldata data,
-        bytes32 masterKey,
-        address[] calldata participants
-    ) internal pure returns (bytes memory) {
+    function _multiLayerEncrypt(bytes calldata data, bytes32 masterKey, address[] calldata participants)
+        internal
+        pure
+        returns (bytes memory)
+    {
         bytes memory result = data;
 
         // Layer 1: XOR with master key
@@ -446,11 +433,11 @@ contract AgentSecurityModule {
         return obfuscated;
     }
 
-    function _multiLayerDecrypt(
-        bytes calldata encryptedData,
-        bytes calldata keyData,
-        address participant
-    ) internal pure returns (bytes memory) {
+    function _multiLayerDecrypt(bytes calldata encryptedData, bytes calldata keyData, address participant)
+        internal
+        pure
+        returns (bytes memory)
+    {
         // This is a simplified implementation
         // In production, this would properly handle key shares and participant verification
         require(keyData.length >= 64, "Insufficient key data");
@@ -476,10 +463,11 @@ contract AgentSecurityModule {
         return result;
     }
 
-    function _generateKeyShares(
-        bytes32 masterKey,
-        address[] calldata participants
-    ) internal pure returns (bytes memory) {
+    function _generateKeyShares(bytes32 masterKey, address[] calldata participants)
+        internal
+        pure
+        returns (bytes memory)
+    {
         bytes32 participantKey = keccak256(abi.encodePacked(participants));
         return abi.encode(masterKey, participantKey);
     }

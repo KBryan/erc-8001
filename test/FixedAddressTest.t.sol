@@ -108,7 +108,7 @@ contract FixedAddressTest is Test {
         _acceptCoordination(intentHash, alice, aliceKey);
 
         // Check acceptance
-        (,,,address[] memory acceptedBy,) = coordination.getCoordinationStatus(intentHash);
+        (,,, address[] memory acceptedBy,) = coordination.getCoordinationStatus(intentHash);
         assertEq(acceptedBy.length, 1);
         assertEq(acceptedBy[0], alice);
     }
@@ -197,7 +197,11 @@ contract FixedAddressTest is Test {
         return coordination.proposeCoordination(intent, signature, payload);
     }
 
-    function _createIntent(address[] memory participants, uint64 nonce) internal view returns (IAgentCoordinationCore.AgentIntent memory) {
+    function _createIntent(address[] memory participants, uint64 nonce)
+        internal
+        view
+        returns (IAgentCoordinationCore.AgentIntent memory)
+    {
         return IAgentCoordinationCore.AgentIntent({
             payloadHash: bytes32(0), // Will be set later
             expiry: uint64(block.timestamp + 3600),
@@ -225,7 +229,11 @@ contract FixedAddressTest is Test {
         });
     }
 
-    function _signIntent(IAgentCoordinationCore.AgentIntent memory intent, uint256 privateKey) internal view returns (bytes memory) {
+    function _signIntent(IAgentCoordinationCore.AgentIntent memory intent, uint256 privateKey)
+        internal
+        view
+        returns (bytes memory)
+    {
         bytes32 intentHash = coordination.getIntentHash(intent);
         bytes32 domainSeparator = coordination.getDomainSeparator();
         bytes32 digest = keccak256(abi.encodePacked("\x19\x01", domainSeparator, intentHash));

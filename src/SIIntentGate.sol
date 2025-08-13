@@ -10,8 +10,7 @@ contract SIIntentGate {
 
     // EIP-712 Domain
     // keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)")
-    bytes32 public constant DOMAIN_TYPEHASH =
-        0x8b73c3c69bb8fe3d512ecc4cf759cc79239f7b179b0ffacaa9a75d522b39400f;
+    bytes32 public constant DOMAIN_TYPEHASH = 0x8b73c3c69bb8fe3d512ecc4cf759cc79239f7b179b0ffacaa9a75d522b39400f;
 
     bytes32 public immutable DOMAIN_SEPARATOR;
     bytes32 public immutable KIDR_ALLOWED; // 0x0 if not enforced
@@ -22,13 +21,9 @@ contract SIIntentGate {
     event IntentAccepted(address indexed agent, uint64 nonce, bytes32 ctHash);
 
     constructor(string memory name, string memory version, bytes32 kidRAllowed) {
-        DOMAIN_SEPARATOR = keccak256(abi.encode(
-            DOMAIN_TYPEHASH,
-            keccak256(bytes(name)),
-            keccak256(bytes(version)),
-            block.chainid,
-            address(this)
-        ));
+        DOMAIN_SEPARATOR = keccak256(
+            abi.encode(DOMAIN_TYPEHASH, keccak256(bytes(name)), keccak256(bytes(version)), block.chainid, address(this))
+        );
         KIDR_ALLOWED = kidRAllowed;
     }
 

@@ -13,29 +13,18 @@ library SIIntentLib {
         0x39b63da0625663ca114633bb099c5f9c4137311a5780a132db1f03e4d11dcc3d;
 
     struct Header {
-        bytes32 dom;        // domain id
-        address agent;      // agent address (EOA or ERC-1271 contract)
-        bytes32 kidR;       // recipient key id (optional; use 0x0 if not enforced)
-        uint64  nonce;      // unique per (agent, kidR)
-        uint64  ttl;        // absolute unix expiry in seconds
-        bytes32 mpHash;     // keccak256(public metadata bytes)
-        bytes32 ctHash;     // keccak256(ciphertext bytes) - treat as payload commitment
+        bytes32 dom; // domain id
+        address agent; // agent address (EOA or ERC-1271 contract)
+        bytes32 kidR; // recipient key id (optional; use 0x0 if not enforced)
+        uint64 nonce; // unique per (agent, kidR)
+        uint64 ttl; // absolute unix expiry in seconds
+        bytes32 mpHash; // keccak256(public metadata bytes)
+        bytes32 ctHash; // keccak256(ciphertext bytes) - treat as payload commitment
     }
 
     /// @dev EIP-712 struct hash for Header
     function hashHeader(Header memory h) internal pure returns (bytes32) {
-        return keccak256(
-            abi.encode(
-                INTENT_HEADER_TYPEHASH,
-                h.dom,
-                h.agent,
-                h.kidR,
-                h.nonce,
-                h.ttl,
-                h.mpHash,
-                h.ctHash
-            )
-        );
+        return keccak256(abi.encode(INTENT_HEADER_TYPEHASH, h.dom, h.agent, h.kidR, h.nonce, h.ttl, h.mpHash, h.ctHash));
     }
 
     /// @dev EIP-712 digest = keccak256("\x19\x01" || domainSeparator || structHash)
@@ -48,7 +37,9 @@ library SIIntentLib {
         if (signer.code.length == 0) {
             // ----- EOA path -----
             if (sig.length != 65) return false;
-            bytes32 r; bytes32 s; uint8 v;
+            bytes32 r;
+            bytes32 s;
+            uint8 v;
             assembly {
                 r := calldataload(sig.offset)
                 s := calldataload(add(sig.offset, 32))
@@ -64,7 +55,9 @@ library SIIntentLib {
             // ----- Contract wallet path (ERC-1271) -----
             try IERC1271(signer).isValidSignature(dig, sig) returns (bytes4 magic) {
                 return magic == 0x1626ba7e;
-            } catch { return false; }
+            } catch {
+                return false;
+            }
         }
     }
 }

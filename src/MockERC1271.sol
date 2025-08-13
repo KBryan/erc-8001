@@ -4,7 +4,7 @@ pragma solidity ^0.8.20;
 /// @title MockERC1271 - simple mock for ERC-1271 signatures
 contract MockERC1271 {
     bytes32 public allowedHash;
-    bytes   public allowedSig;
+    bytes public allowedSig;
 
     function set(bytes32 h, bytes calldata s) external {
         allowedHash = h;

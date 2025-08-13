@@ -37,12 +37,7 @@ contract AgentSecurityModuleTest is Test {
         participants[1] = bob;
 
         vm.prank(framework);
-        securityModule.createSecurityContext(
-            testIntentHash,
-            AgentSecurityModule.SecurityLevel.BASIC,
-            participants,
-            0
-        );
+        securityModule.createSecurityContext(testIntentHash, AgentSecurityModule.SecurityLevel.BASIC, participants, 0);
 
         AgentSecurityModule.SecurityContext memory context = securityModule.getSecurityContext(testIntentHash);
         assertEq(uint8(context.level), uint8(AgentSecurityModule.SecurityLevel.BASIC));
@@ -140,12 +135,7 @@ contract AgentSecurityModuleTest is Test {
 
         vm.prank(alice); // Not the framework
         vm.expectRevert("Unauthorized: framework only");
-        securityModule.createSecurityContext(
-            testIntentHash,
-            AgentSecurityModule.SecurityLevel.BASIC,
-            participants,
-            0
-        );
+        securityModule.createSecurityContext(testIntentHash, AgentSecurityModule.SecurityLevel.BASIC, participants, 0);
     }
 
     function testCreateDuplicateContext() public {
@@ -153,21 +143,11 @@ contract AgentSecurityModuleTest is Test {
         participants[0] = alice;
 
         vm.prank(framework);
-        securityModule.createSecurityContext(
-            testIntentHash,
-            AgentSecurityModule.SecurityLevel.BASIC,
-            participants,
-            0
-        );
+        securityModule.createSecurityContext(testIntentHash, AgentSecurityModule.SecurityLevel.BASIC, participants, 0);
 
         vm.prank(framework);
         vm.expectRevert("Context already exists");
-        securityModule.createSecurityContext(
-            testIntentHash,
-            AgentSecurityModule.SecurityLevel.BASIC,
-            participants,
-            0
-        );
+        securityModule.createSecurityContext(testIntentHash, AgentSecurityModule.SecurityLevel.BASIC, participants, 0);
     }
 
     function testValidateBasicSecurityLevel() public {
@@ -175,18 +155,10 @@ contract AgentSecurityModuleTest is Test {
         participants[0] = alice;
 
         vm.prank(framework);
-        securityModule.createSecurityContext(
-            testIntentHash,
-            AgentSecurityModule.SecurityLevel.BASIC,
-            participants,
-            0
-        );
+        securityModule.createSecurityContext(testIntentHash, AgentSecurityModule.SecurityLevel.BASIC, participants, 0);
 
-        (bool valid, string memory reason) = securityModule.validateSecurityLevel(
-            testIntentHash,
-            AgentSecurityModule.SecurityLevel.BASIC,
-            ""
-        );
+        (bool valid, string memory reason) =
+            securityModule.validateSecurityLevel(testIntentHash, AgentSecurityModule.SecurityLevel.BASIC, "");
 
         assertTrue(valid);
         assertEq(reason, "");
@@ -198,18 +170,12 @@ contract AgentSecurityModuleTest is Test {
 
         vm.prank(framework);
         securityModule.createSecurityContext(
-            testIntentHash,
-            AgentSecurityModule.SecurityLevel.STANDARD,
-            participants,
-            300
+            testIntentHash, AgentSecurityModule.SecurityLevel.STANDARD, participants, 300
         );
 
         // Should fail immediately due to timelock
-        (bool valid, string memory reason) = securityModule.validateSecurityLevel(
-            testIntentHash,
-            AgentSecurityModule.SecurityLevel.STANDARD,
-            ""
-        );
+        (bool valid, string memory reason) =
+            securityModule.validateSecurityLevel(testIntentHash, AgentSecurityModule.SecurityLevel.STANDARD, "");
 
         assertFalse(valid);
         assertEq(reason, "Timelock not satisfied");
@@ -217,11 +183,8 @@ contract AgentSecurityModuleTest is Test {
         // Fast forward time
         vm.warp(block.timestamp + 301);
 
-        (valid, reason) = securityModule.validateSecurityLevel(
-            testIntentHash,
-            AgentSecurityModule.SecurityLevel.STANDARD,
-            ""
-        );
+        (valid, reason) =
+            securityModule.validateSecurityLevel(testIntentHash, AgentSecurityModule.SecurityLevel.STANDARD, "");
 
         assertTrue(valid);
     }
@@ -232,31 +195,22 @@ contract AgentSecurityModuleTest is Test {
 
         vm.prank(framework);
         securityModule.createSecurityContext(
-            testIntentHash,
-            AgentSecurityModule.SecurityLevel.ENHANCED,
-            participants,
-            1800
+            testIntentHash, AgentSecurityModule.SecurityLevel.ENHANCED, participants, 1800
         );
 
         vm.warp(block.timestamp + 1801);
 
         // Should fail without proof
-        (bool valid, string memory reason) = securityModule.validateSecurityLevel(
-            testIntentHash,
-            AgentSecurityModule.SecurityLevel.ENHANCED,
-            ""
-        );
+        (bool valid, string memory reason) =
+            securityModule.validateSecurityLevel(testIntentHash, AgentSecurityModule.SecurityLevel.ENHANCED, "");
 
         assertFalse(valid);
         assertEq(reason, "Security proof required for enhanced levels");
 
         // Should succeed with proof (65-byte signature)
         bytes memory proof = new bytes(65);
-        (valid, reason) = securityModule.validateSecurityLevel(
-            testIntentHash,
-            AgentSecurityModule.SecurityLevel.ENHANCED,
-            proof
-        );
+        (valid, reason) =
+            securityModule.validateSecurityLevel(testIntentHash, AgentSecurityModule.SecurityLevel.ENHANCED, proof);
 
         assertTrue(valid);
     }
@@ -268,10 +222,7 @@ contract AgentSecurityModuleTest is Test {
 
         vm.prank(framework);
         securityModule.createSecurityContext(
-            testIntentHash,
-            AgentSecurityModule.SecurityLevel.MAXIMUM,
-            participants,
-            7200
+            testIntentHash, AgentSecurityModule.SecurityLevel.MAXIMUM, participants, 7200
         );
 
         vm.warp(block.timestamp + 7201);
@@ -279,11 +230,8 @@ contract AgentSecurityModuleTest is Test {
         bytes memory proof = new bytes(32); // Valid proof length
 
         // Should fail without all public keys registered
-        (bool valid, string memory reason) = securityModule.validateSecurityLevel(
-            testIntentHash,
-            AgentSecurityModule.SecurityLevel.MAXIMUM,
-            proof
-        );
+        (bool valid, string memory reason) =
+            securityModule.validateSecurityLevel(testIntentHash, AgentSecurityModule.SecurityLevel.MAXIMUM, proof);
 
         assertFalse(valid);
         assertEq(reason, "Participant missing public key registration");
@@ -296,11 +244,8 @@ contract AgentSecurityModuleTest is Test {
         securityModule.registerPublicKey(keccak256("bob_key"));
 
         // Should now succeed
-        (valid, reason) = securityModule.validateSecurityLevel(
-            testIntentHash,
-            AgentSecurityModule.SecurityLevel.MAXIMUM,
-            proof
-        );
+        (valid, reason) =
+            securityModule.validateSecurityLevel(testIntentHash, AgentSecurityModule.SecurityLevel.MAXIMUM, proof);
 
         assertTrue(valid);
     }
@@ -311,21 +256,15 @@ contract AgentSecurityModuleTest is Test {
         participants[0] = alice;
         participants[1] = bob;
 
-        (bytes memory encryptedData, bytes memory keyData) = securityModule.encryptCoordinationData(
-            testData,
-            participants,
-            AgentSecurityModule.SecurityLevel.BASIC
-        );
+        (bytes memory encryptedData, bytes memory keyData) =
+            securityModule.encryptCoordinationData(testData, participants, AgentSecurityModule.SecurityLevel.BASIC);
 
         // Basic level uses obfuscation, not real encryption
         assertTrue(encryptedData.length == testData.length);
         assertEq(keyData.length, 0); // No key data for basic level
 
         bytes memory decryptedData = securityModule.decryptCoordinationData(
-            encryptedData,
-            keyData,
-            alice,
-            AgentSecurityModule.SecurityLevel.BASIC
+            encryptedData, keyData, alice, AgentSecurityModule.SecurityLevel.BASIC
         );
 
         assertEq(decryptedData, testData);
@@ -337,18 +276,15 @@ contract AgentSecurityModuleTest is Test {
         participants[0] = alice;
         participants[1] = bob;
 
-        (bytes memory encryptedData, bytes memory keyData) = securityModule.encryptCoordinationData(
-            testData,
-            participants,
-            AgentSecurityModule.SecurityLevel.STANDARD
-        );
+        (bytes memory encryptedData, bytes memory keyData) =
+            securityModule.encryptCoordinationData(testData, participants, AgentSecurityModule.SecurityLevel.STANDARD);
 
         assertTrue(encryptedData.length == testData.length);
         assertTrue(keyData.length > 0);
 
         // Verify encryption actually changed the data
         bool dataChanged = false;
-        for (uint i = 0; i < testData.length; i++) {
+        for (uint256 i = 0; i < testData.length; i++) {
             if (testData[i] != encryptedData[i]) {
                 dataChanged = true;
                 break;
@@ -357,10 +293,7 @@ contract AgentSecurityModuleTest is Test {
         assertTrue(dataChanged);
 
         bytes memory decryptedData = securityModule.decryptCoordinationData(
-            encryptedData,
-            keyData,
-            alice,
-            AgentSecurityModule.SecurityLevel.STANDARD
+            encryptedData, keyData, alice, AgentSecurityModule.SecurityLevel.STANDARD
         );
 
         assertEq(decryptedData, testData);
@@ -373,20 +306,14 @@ contract AgentSecurityModuleTest is Test {
         participants[1] = bob;
         participants[2] = charlie;
 
-        (bytes memory encryptedData, bytes memory keyData) = securityModule.encryptCoordinationData(
-            testData,
-            participants,
-            AgentSecurityModule.SecurityLevel.ENHANCED
-        );
+        (bytes memory encryptedData, bytes memory keyData) =
+            securityModule.encryptCoordinationData(testData, participants, AgentSecurityModule.SecurityLevel.ENHANCED);
 
         assertTrue(encryptedData.length == testData.length);
         assertTrue(keyData.length >= 64); // Enhanced level uses larger keys
 
         bytes memory decryptedData = securityModule.decryptCoordinationData(
-            encryptedData,
-            keyData,
-            alice,
-            AgentSecurityModule.SecurityLevel.ENHANCED
+            encryptedData, keyData, alice, AgentSecurityModule.SecurityLevel.ENHANCED
         );
 
         assertEq(decryptedData, testData);
@@ -398,22 +325,14 @@ contract AgentSecurityModuleTest is Test {
 
         // Create the context - the creator will be tx.origin (this test contract)
         vm.prank(framework);
-        securityModule.createSecurityContext(
-            testIntentHash,
-            AgentSecurityModule.SecurityLevel.BASIC,
-            participants,
-            0
-        );
+        securityModule.createSecurityContext(testIntentHash, AgentSecurityModule.SecurityLevel.BASIC, participants, 0);
 
         // Get the actual creator from the context
         AgentSecurityModule.SecurityContext memory context = securityModule.getSecurityContext(testIntentHash);
 
         // Upgrade with the actual creator
         vm.prank(context.creator);
-        securityModule.upgradeSecurityLevel(
-            testIntentHash,
-            AgentSecurityModule.SecurityLevel.STANDARD
-        );
+        securityModule.upgradeSecurityLevel(testIntentHash, AgentSecurityModule.SecurityLevel.STANDARD);
 
         // Verify upgrade
         context = securityModule.getSecurityContext(testIntentHash);
@@ -426,19 +345,11 @@ contract AgentSecurityModuleTest is Test {
         participants[0] = alice;
 
         vm.prank(framework);
-        securityModule.createSecurityContext(
-            testIntentHash,
-            AgentSecurityModule.SecurityLevel.BASIC,
-            participants,
-            0
-        );
+        securityModule.createSecurityContext(testIntentHash, AgentSecurityModule.SecurityLevel.BASIC, participants, 0);
 
         vm.prank(alice); // Not the creator
         vm.expectRevert("Unauthorized: not creator");
-        securityModule.upgradeSecurityLevel(
-            testIntentHash,
-            AgentSecurityModule.SecurityLevel.STANDARD
-        );
+        securityModule.upgradeSecurityLevel(testIntentHash, AgentSecurityModule.SecurityLevel.STANDARD);
     }
 
     function testDowngradeSecurityLevel() public {
@@ -447,10 +358,7 @@ contract AgentSecurityModuleTest is Test {
 
         vm.prank(framework);
         securityModule.createSecurityContext(
-            testIntentHash,
-            AgentSecurityModule.SecurityLevel.STANDARD,
-            participants,
-            300
+            testIntentHash, AgentSecurityModule.SecurityLevel.STANDARD, participants, 300
         );
 
         vm.warp(block.timestamp + 301);
@@ -459,10 +367,7 @@ contract AgentSecurityModuleTest is Test {
 
         vm.prank(context.creator);
         vm.expectRevert("Cannot downgrade security level");
-        securityModule.upgradeSecurityLevel(
-            testIntentHash,
-            AgentSecurityModule.SecurityLevel.BASIC
-        );
+        securityModule.upgradeSecurityLevel(testIntentHash, AgentSecurityModule.SecurityLevel.BASIC);
     }
 
     function testRevokeAccess() public {
@@ -471,12 +376,7 @@ contract AgentSecurityModuleTest is Test {
         participants[1] = bob;
 
         vm.prank(framework);
-        securityModule.createSecurityContext(
-            testIntentHash,
-            AgentSecurityModule.SecurityLevel.BASIC,
-            participants,
-            0
-        );
+        securityModule.createSecurityContext(testIntentHash, AgentSecurityModule.SecurityLevel.BASIC, participants, 0);
 
         assertTrue(securityModule.hasAccess(testIntentHash, alice));
 
@@ -492,12 +392,7 @@ contract AgentSecurityModuleTest is Test {
         participants[0] = alice;
 
         vm.prank(framework);
-        securityModule.createSecurityContext(
-            testIntentHash,
-            AgentSecurityModule.SecurityLevel.BASIC,
-            participants,
-            0
-        );
+        securityModule.createSecurityContext(testIntentHash, AgentSecurityModule.SecurityLevel.BASIC, participants, 0);
 
         vm.prank(owner); // Owner can revoke anyone's access
         securityModule.revokeAccess(testIntentHash, alice);
@@ -553,28 +448,18 @@ contract AgentSecurityModuleTest is Test {
 
         vm.prank(framework);
         vm.expectRevert("Invalid participant count");
-        securityModule.createSecurityContext(
-            testIntentHash,
-            AgentSecurityModule.SecurityLevel.BASIC,
-            participants,
-            0
-        );
+        securityModule.createSecurityContext(testIntentHash, AgentSecurityModule.SecurityLevel.BASIC, participants, 0);
     }
 
     function testTooManyParticipants() public {
         address[] memory participants = new address[](101); // Over the limit
-        for (uint i = 0; i < 101; i++) {
+        for (uint256 i = 0; i < 101; i++) {
             participants[i] = address(uint160(i + 1));
         }
 
         vm.prank(framework);
         vm.expectRevert("Invalid participant count");
-        securityModule.createSecurityContext(
-            testIntentHash,
-            AgentSecurityModule.SecurityLevel.BASIC,
-            participants,
-            0
-        );
+        securityModule.createSecurityContext(testIntentHash, AgentSecurityModule.SecurityLevel.BASIC, participants, 0);
     }
 
     function testEncryptEmptyData() public {
@@ -583,11 +468,7 @@ contract AgentSecurityModuleTest is Test {
         participants[0] = alice;
 
         vm.expectRevert("No data to encrypt");
-        securityModule.encryptCoordinationData(
-            emptyData,
-            participants,
-            AgentSecurityModule.SecurityLevel.BASIC
-        );
+        securityModule.encryptCoordinationData(emptyData, participants, AgentSecurityModule.SecurityLevel.BASIC);
     }
 
     function testDecryptWithInvalidParticipant() public {
@@ -596,10 +477,7 @@ contract AgentSecurityModuleTest is Test {
 
         vm.expectRevert("Invalid participant");
         securityModule.decryptCoordinationData(
-            encryptedData,
-            keyData,
-            address(0),
-            AgentSecurityModule.SecurityLevel.BASIC
+            encryptedData, keyData, address(0), AgentSecurityModule.SecurityLevel.BASIC
         );
     }
 }

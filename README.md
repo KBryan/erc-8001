@@ -304,8 +304,8 @@ make docs
 ## Documentation
 
 - [EIP-8001 Specification](https://eips.ethereum.org/EIPS/eip-8001)
-- [Security Module Guide](docs/security-module.md)
-- [Integration Examples](docs/integration-examples.md)
+- [Security Module Guide](security-module.md)
+- [Integration Examples](integration-examples.md)
 - [API Reference](docs/api-reference.md)
 - [Deployment Guide](docs/deployment.md)
 

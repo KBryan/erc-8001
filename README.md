@@ -48,8 +48,8 @@ The **Agent Coordination Framework** implements [EIP-8001](https://eips.ethereum
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-org/eip-8001-agent-coordination
-cd eip-8001-agent-coordination
+git clone https://github.com/kbryan/eip-8001
+cd eip-8001
 
 # Install dependencies
 forge install
@@ -339,7 +339,7 @@ This project is licensed under [CC0-1.0](https://creativecommons.org/publicdomai
 ## Contact
 
 - **Specification Discussion**: [Ethereum Magicians](https://ethereum-magicians.org/t/erc-8001-secure-intents-a-cryptographic-framework-for-autonomous-agent-coordination-draft-erc-8001/24989)
-- **Issues**: [GitHub Issues](https://github.com/your-org/eip-8001-agent-coordination/issues)
+- **Issues**: [GitHub Issues](https://github.com/kbryan/eip-8001/issues)
 - **Security**: kwame.bryan@gmail.com
 
 ---

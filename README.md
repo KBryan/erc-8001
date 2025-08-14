@@ -8,7 +8,7 @@
 
 ## Overview
 
-The **Agent Coordination Framework** implements [EIP-8001](https://eips.ethereum.org/EIPS/eip-8001), providing a standardized, secure infrastructure for autonomous agents to coordinate complex operations in DeFi, MEV extraction, cross-chain arbitrage, and automated market making.
+The **Agent Coordination Framework** implements [EIP-8001](https://eips.ethereum.org/EIPS/eip-8001), providing a standardized, secure infrastructure for autonomous agents to coordinate complex operations in DeFi/GameFi, MEV extraction, cross-chain arbitrage, in-game NPCs and automated market making.
 
 ### Key Features
 

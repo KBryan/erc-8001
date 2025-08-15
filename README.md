@@ -8,7 +8,7 @@
 
 ## Overview
 
-The **Agent Coordination Framework** implements [EIP-8001](https://eips.ethereum.org/EIPS/eip-8001), providing a standardized, secure infrastructure for autonomous agents to coordinate complex operations in DeFi/GameFi, MEV extraction, cross-chain arbitrage, in-game NPCs and automated market making.
+The **Agent Coordination Framework** implements [ERC-8001](https://eips.ethereum.org/EIPS/eip-8001), providing a standardized, secure infrastructure for autonomous agents to coordinate complex operations in DeFi/GameFi, MEV extraction, cross-chain arbitrage, in-game NPCs and automated market making.
 
 ### Key Features
 
@@ -48,8 +48,8 @@ The **Agent Coordination Framework** implements [EIP-8001](https://eips.ethereum
 
 ```bash
 # Clone the repository
-git clone https://github.com/kbryan/eip-8001
-cd eip-8001
+git clone https://github.com/kbryan/erc-8001
+cd erc-8001
 
 # Install dependencies
 forge install
@@ -279,7 +279,7 @@ We welcome contributions! Please see our [Contributing Guidelines](CONTRIBUTING.
 
 ```bash
 # Clone with submodules
-git clone --recursive https://github.com/your-org/eip-8001-agent-coordination
+git clone --recursive https://github.com/your-org/erc-8001-agent-coordination
 
 # Install pre-commit hooks
 pre-commit install
@@ -303,7 +303,7 @@ make docs
 
 ## Documentation
 
-- [EIP-8001 Specification](https://eips.ethereum.org/EIPS/eip-8001)
+- [ERC-8001 Specification](https://eips.ethereum.org/EIPS/eip-8001)
 - [Security Module Guide](security-module.md)
 - [Integration Examples](integration-examples.md)
 - [API Reference](docs/api-reference.md)

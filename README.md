@@ -19,7 +19,7 @@ The **Agent Coordination Framework** implements [EIP-8001](https://eips.ethereum
 -  **Autonomous**: Direct agent-to-agent coordination without trusted intermediaries
 -  **ERC Compatible**: Works alongside ERC-7683 and ERC-7521
 
-## 🏗️ Architecture
+## Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────────┐

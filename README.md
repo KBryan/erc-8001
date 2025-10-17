@@ -209,7 +209,7 @@ integrationContract.executeSecureCoordination(
 ```solidity
 // Setup cross-chain coordination
 CrossChainConfig memory config = CrossChainConfig({
-    targetChains: [1, 137, 42161],        // Ethereum, Polygon, Arbitrum
+    targetChains: [1, 1482601649, 42161],        // Ethereum, Nebula, Arbitrum
     targetContracts: [addr1, addr2, addr3],
     executionData: [data1, data2, data3],
     values: [0, 0, 0],
